@@ -17,26 +17,26 @@ const config = {
 const pool = new Pool(config);
 
 app.post("/restaurant", async (req, res) => {
-	const name = req.body.name;
 	const city = req.body.city;
+	const name = req.body.name;
 	const state = req.body.state;
 	const zip = req.body.zip;
 	const type = req.body.type;
 	const dollars = req.body.dollars;
 
 	try {
-		const template = "SELECT * FROM restaurants WHERE name = $1 AND city = $2 AND state = $3 AND zip = $4 AND type = $5 AND dollars = $6";
+		const template = "SELECT * FROM restaurants WHERE city = $1 AND name = $2 AND state = $3 AND zip = $4 AND type = $5 AND dollars = $6";
 		const response = await pool.query(template, [
-			name,
-			city, 
+			city,
+			name, 
 			state, 
 			zip, 
 			type,
 			dollars
 		]);
 	if (response.rowCount == 0) {
-		const template = "INSERT INTO restaurants(name, city, state, zip, type, dollars) VALUES ($1, $2, $3, $4, $5, $6)";
-		const response = await pool.query(template, [ name,city, state, zip, type, dollars ]);
+		const template = "INSERT INTO restaurants(city, name, state, zip, type, dollars) VALUES ($1, $2, $3, $4, $5, $6)";
+		const response = await pool.query(template, [ city, name, state, zip, type, dollars ]);
 		res.json({city: city, name: name, state:state, zip:zip, type:type, dollars:dollars});
 	} else {
 		res.json({error: "city already enrolled"});
@@ -51,27 +51,23 @@ app.post("/restaurant", async (req, res) => {
 
 app.get("/restaurant", async (req, res) => {
 	try {
-	  if (req.query.name) {
+	  if (req.query.city) {
 	
-		const template = "SELECT * FROM restaurants WHERE name = $1";
-		const response = await pool.query(template, [req.query.name]);
+		const template = "SELECT * FROM restaurants WHERE city = $1";
+		const response = await pool.query(template, [req.query.city]);
 	
 		if (response.rowCount == 0) {
-			res.json({ status: "not found", searchTerm: req.query.name });
+			res.json({ status: "not found", searchTerm: req.query.city });
 		} else {
 			const restaurants = response.rows.map(function(item) {
-			return item.name;
+			return item.city;
 		});
-			res.json({ status: "ok", attendees: workshops.rows[0] });
-
-
-//			res.json({attendees: workshops.row[0] });
 		}
 	} else {
 		console.log("In the else")
 		const template = "SELECT distinct name FROM restaurants";
 		const response = await pool.query(template);
-		res.json({name: response.rows[0] });
+		res.json({city: response.rows[0] });
 		console.log("end of else")}
 	} catch (err) {
 		console.error("Error running query " + err);
